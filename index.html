@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thi Trắc Nghiệm: Môn Doanh Trại</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --card-bg: #fff;
+            --correct-color: #d4edda;
+            --correct-border: #c3e6cb;
+            --wrong-color: #f8d7da;
+            --wrong-border: #f5c6cb;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .question-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        .option-label {
+            display: block;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .option-label:hover {
+            background-color: #f1f1f1;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #fff;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #004494;
+        }
+        #result-screen {
+            display: none;
+            text-align: center;
+        }
+        .score-board {
+            font-size: 1.2em;
+            margin: 20px 0;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+        .score-board span {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .correct-answer {
+            background-color: var(--correct-color);
+            border-color: var(--correct-border);
+        }
+        .wrong-answer {
+            background-color: var(--wrong-color);
+            border-color: var(--wrong-border);
+        }
+        .correct-text {
+            color: #155724;
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+                margin: 10px auto;
+            }
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="start-screen">
+    <div class="card">
+        <h1>Bài Thi Trắc Nghiệm</h1>
+        <h2>Môn: Công Tác Doanh Trại</h2>
+        <p style="text-align: center;">Bài thi gồm <strong>50 câu hỏi</strong> được chọn ngẫu nhiên.<br>Hệ thống sẽ tự động xáo trộn câu hỏi và đáp án mỗi lần bạn làm bài.</p>
+        <button class="btn" onclick="startQuiz()">BẮT ĐẦU LÀM BÀI</button>
+    </div>
+</div>
+
+<div class="container" id="quiz-screen" style="display: none;">
+    <h2 id="quiz-title">Bài Thi Môn Doanh Trại</h2>
+    <div id="questions-container"></div>
+    <button class="btn" onclick="submitQuiz()" style="margin-top: 20px;">NỘP BÀI</button>
+</div>
+
+<div class="container" id="result-screen">
+    <div class="card">
+        <h1>Kết Quả Bài Thi</h1>
+        <div class="score-board">
+            <p>Điểm số: <span id="score-text">0</span> / 10</p>
+            <p>Số câu đúng: <span id="correct-text">0</span> / 50</p>
+            <p>Số câu sai / Chưa làm: <span id="wrong-text">0</span> / 50</p>
+        </div>
+        <button class="btn" onclick="location.reload()">LÀM LẠI BÀI MỚI</button>
+    </div>
+    <div id="review-container"></div>
+    <button class="btn" onclick="location.reload()" style="margin-top: 20px;">LÀM LẠI BÀI MỚI</button>
+</div>
+
+<script>
+    // Toàn bộ dữ liệu câu hỏi từ file
+    const allQuestions = [{"question": "Đối tượng nào giữ vai trò nòng cốt trong việc thực hiện công tác doanh trại thường xuyên tại tiểu đoàn bộ binh?", "options": ["Cán bộ, chiến sĩ và nhân viên hậu cần tiểu đoàn.", "Trợ lý doanh trại và nhân viên doanh trại cấp trên.", "Các tổ chức quần chúng và lực lượng dân quân tự vệ trên địa bàn đóng quân.", "Chỉ huy tiểu đoàn và chỉ huy các đơn vị thuộc tiểu đoàn."], "answer": "Cán bộ, chiến sĩ và nhân viên hậu cần tiểu đoàn."}, {"question": "Mục đích chính của công tác doanh trại thường xuyên là gì?", "options": ["Bảo đảm mọi mặt doanh trại cho đơn vị thực hiện thắng lợi các nhiệm vụ.", "Tối ưu hóa việc sử dụng ngân sách để tái đầu tư vào các hạng mục xây dựng cơ bản.", "Hoàn thiện hệ thống hạ tầng kỹ thuật nhằm chuyển đổi mục đích sử dụng đất quốc phòng.", "Duy trì tình trạng kỹ thuật tốt của nhà, công trình."], "answer": "Bảo đảm mọi mặt doanh trại cho đơn vị thực hiện thắng lợi các nhiệm vụ."}, {"question": "Trong thời bình, nhiệm vụ nào sau đây là nổi bật nhất của công tác doanh trại?", "options": ["Đầu tư xây dựng công trình.", "Nghiên cứu phương án ngụy trang và bảo vệ công trình trong tình huống khẩn cấp.", "Tổ chức khai thác vật liệu xây dựng tại chỗ nhằm tự túc nguồn cung đơn vị.", "Quản lý và vận hành các cơ sở dịch vụ doanh trại nhằm tăng thu nhập cho quỹ vốn."], "answer": "Đầu tư xây dựng công trình."}, {"question": "Vị trí của công tác doanh trại thường xuyên được xác định như thế nào?", "options": ["Là một mặt công tác hậu cần - kỹ thuật.", "Là nội dung trọng tâm của công tác huấn luyện dã ngoại và sẵn sàng chiến đấu.", "Là một mặt hoạt động nghiệp vụ độc lập không nằm trong hệ thống hậu cần.", "Là nội dung bắt buộc trong quy trình quản lý hành chính quân sự."], "answer": "Là một mặt công tác hậu cần - kỹ thuật."}, {"question": "Nguồn bảo đảm doanh trại tại chỗ của địa phương thường tác động đến yếu tố nào?", "options": ["Điện, nước và vật chất doanh trại khác.", "Khả năng huy động lực lượng lao động chuyên môn cao cho đơn vị.", "Quy hoạch tổng thể mặt bằng đóng quân của các đơn vị.", "Tiêu chuẩn, định mức sử dụng vật chất của cán bộ, chiến sĩ."], "answer": "Điện, nước và vật chất doanh trại khác."}, {"question": "Đặc điểm nào sau đây thuộc về công tác doanh trại thường xuyên?", "options": ["Khả năng bảo đảm thường có hạn so với nhu cầu thực tế.", "Được ưu tiên cấp phát vật chất theo cơ chế đặc thù không phụ thuộc vào ngân sách.", "Chỉ tập trung vào hạng mục sửa chữa nhỏ, không liên quan đến hạ tầng điện nước.", "Tính biến động thấp do đã được quy định cứng trong các văn bản pháp quy."], "answer": "Khả năng bảo đảm thường có hạn so với nhu cầu thực tế."}, {"question": "Cơ quan nào là cơ quan nghiệp vụ, kỹ thuật đầu ngành về công tác doanh trại toàn quân?", "options": ["Cục Doanh trại.", "Phòng Doanh trại.", "Ban Doanh trại.", "Cục Quản lý nhà đất."], "answer": "Cục Doanh trại."}, {"question": "Phong trào thi đua tiêu biểu của ngành Doanh trại là gì?", "options": ["\"Xây dựng và quản lý doanh trại chính quy, xanh, sạch, đẹp\".", "\"Xây dựng môi trường văn hóa quân đội gắn với quản lý doanh trại\".", "\"Nâng cao chất lượng xây dựng cơ bản và quản lý nhà ở chính quy\".", "\"Xây dựng và quản lý doanh trại chính quy sáng, xanh, sạch, đẹp\"."], "answer": "\"Xây dựng và quản lý doanh trại chính quy, xanh, sạch, đẹp\"."}, {"question": "Theo Nghị định 02/2026/NĐ-CP, quy định tiêu chuẩn diện tích ở đối với đối tượng Hạ sĩ quan, chiến sĩ sử dụng loại \"Giường 2 tầng\" được xác định là bao nhiêu mét vuông trên một người?", "options": ["8 m2/người.", "6 m2/người.", "4 m2/người.", "12 m2/người."], "answer": "8 m2/người."}, {"question": "Nội dung nào dưới đây thuộc về bảo đảm doanh trại thường xuyên?", "options": ["Bảo đảm nhà ở, làm việc và các công trình sinh hoạt cho bộ đội.", "Bảo đảm hệ thống hạ tầng kỹ thuật phục vụ các khu kinh tế quốc phòng.", "Bảo đảm vật tư kỹ thuật cho việc xây dựng các công trình phòng thủ chiến lược.", "Bảo đảm tiêu chuẩn định mức vật chất hậu cần cho các đối tượng dự bị động viên."], "answer": "Bảo đảm nhà ở, làm việc và các công trình sinh hoạt cho bộ đội."}, {"question": "Theo Nghị định 02/2026/NĐ-CP, định mức sử dụng điện năng cho sinh hoạt và làm việc của đối tượng \"Hạ sĩ quan, binh sĩ\" là bao nhiêu?", "options": ["24 kWh/người/tháng.", "42 kWh/người/tháng.", "110 kWh/người/tháng.", "130 kWh/người/tháng."], "answer": "24 kWh/người/tháng."}, {"question": "Doanh cụ nào sau đây thường được bảo đảm cho cấp tiểu đoàn?", "options": ["Giường, bàn, ghế và giá để súng.", "Hệ thống máy phát điện dự phòng công suất lớn cho sở chỉ huy.", "Thiết bị nhà bếp công nghiệp và hệ thống kho lạnh bảo quản thực phẩm.", "Phương tiện vận tải chuyên dụng phục vụ công tác duy tu sửa chữa."], "answer": "Giường, bàn, ghế và giá để súng."}, {"question": "Để tiết kiệm điện, bộ đội cần thực hiện hành động nào sau đây?", "options": ["Tắt các thiết bị điện khi không sử dụng và khi ra khỏi phòng.", "Thay đổi mức điện áp của hệ thống điện thông qua aptomat tổng.", "Sử dụng thiết bị cảm biến chuyển động để thay thế toàn bộ công tắc thủ công.", "Điều chỉnh giảm công suất hoạt động của các thiết bị nơi công cộng."], "answer": "Tắt các thiết bị điện khi không sử dụng và khi ra khỏi phòng."}, {"question": "Việc quét vôi ve tường nhà định kỳ thuộc nội dung nào trong công tác doanh trại?", "options": ["Duy tu, bảo dưỡng công trình thường xuyên.", "Nâng cấp cấp độ kỹ thuật và cải tạo thẩm mỹ công trình.", "Quy trình xử lý chống thấm bề mặt cho các hạng mục nhà cấp 4.", "Chỉnh trang cảnh quan doanh trại theo phong trào thi đua năm."], "answer": "Duy tu, bảo dưỡng công trình thường xuyên."}, {"question": "Một trong những mục đích của quản lý tài sản doanh trại là gì?", "options": ["Giữ gìn tài sản tốt, bền, sử dụng lâu dài và hiệu quả.", "Tăng giá trị tích lũy tài sản.", "Tối ưu hóa các nguồn thu từ việc khai thác công năng tài sản dôi dư.", "Thiết lập hệ thống dữ liệu số phục vụ việc luân chuyển tài sản giữa các đơn vị."], "answer": "Giữ gìn tài sản tốt, bền, sử dụng lâu dài và hiệu quả."}, {"question": "Ai là người trực tiếp chịu trách nhiệm quản lý tài sản doanh trại tại các đại đội?", "options": ["Đại đội trưởng, Chính trị viên và mọi cán bộ, chiến sĩ trong đại đội.", "Trực ban của các đại đội.", "Hội đồng quân nhân của đơn vị.", "Trợ lý hậu cần tiểu đoàn và chỉ huy các đại đội."], "answer": "Đại đội trưởng, Chính trị viên và mọi cán bộ, chiến sĩ trong đại đội."}, {"question": "Vật chất doanh trại dự trữ SSCĐ thường bao gồm loại nào?", "options": ["Nhà bạt, đèn bão, dụng cụ chứa nước và dầu hỏa.", "Thiết bị thông tin liên lạc và hệ thống camera giám sát dã ngoại.", "Vật liệu xây dựng đúc sẵn phục vụ gia cố công trình chiến đấu.", "Hệ thống bồn chứa nhiên liệu và trang bị phòng chống cháy nổ chuyên dụng."], "answer": "Nhà bạt, đèn bão, dụng cụ chứa nước và dầu hỏa."}, {"question": "Hoạt động nào sau đây giúp phát huy nội lực của đơn vị trong bảo đảm doanh trại?", "options": ["Bộ đội tham gia vệ sinh hệ thống thoát nước và sửa chữa nhỏ.", "Triển khai các dự án xã hội hóa hạ tầng trong khu vực đóng quân.", "Điều chỉnh phương án tăng gia sản xuất để tập trung vốn mua sắm doanh cụ.", "Ký kết các hợp đồng kinh tế về việc duy tu cảnh quan với các đối tác dân sự."], "answer": "Bộ đội tham gia vệ sinh hệ thống thoát nước và sửa chữa nhỏ."}, {"question": "Việc ghi chép vào \"Sổ theo dõi tài sản doanh trại\" nhằm mục đích gì?", "options": ["Theo dõi sự biến động về số lượng và chất lượng của tài sản.", "Làm căn cứ pháp lý để thực hiện quy trình đấu thầu mua sắm hằng năm.", "Phân loại tài sản theo nguồn ngân sách để quyết toán tài chính.", "Đánh giá mức độ hao mòn vật lý làm cơ sở đề xuất kinh phí bảo trì."], "answer": "Theo dõi sự biến động về số lượng và chất lượng của tài sản."}, {"question": "Bảo trì công trình doanh trại được hiểu là gì?", "options": ["Tập hợp các công việc nhằm bảo đảm và duy trì sự làm việc bình thường của công trình.", "Quy trình thay thế các cấu kiện chịu lực chính khi công trình hết niên hạn sử dụng.", "Hoạt động cải tạo mở rộng quy mô diện tích sàn để tăng công năng sử dụng.", "Quá trình kiểm tra định kỳ để thực hiện thủ tục thanh lý và phá dỡ công trình cũ."], "answer": "Tập hợp các công việc nhằm bảo đảm và duy trì sự làm việc bình thường của công trình."}, {"question": "Đối tượng nào thực hiện bảo trì công trình doanh trại?", "options": ["Chủ sở hữu hoặc người quản lý sử dụng công trình.", "Các đơn vị tư vấn giám sát độc lập được cấp có thẩm quyền chỉ định.", "Đội ngũ thợ kỹ thuật có chứng chỉ hành nghề được cấp trên lựa chọn.", "Ban Quản lý dự án đầu tư xây dựng thuộc cơ quan hậu cần cấp trên."], "answer": "Chủ sở hữu hoặc người quản lý sử dụng công trình."}, {"question": "Thời điểm bắt đầu thực hiện bảo trì công trình là khi nào?", "options": ["Kể từ ngày nghiệm thu bàn giao đưa công trình vào sử dụng.", "Sau khi công trình hết thời gian bảo hành theo hợp đồng xây lắp.", "Khi các thông số kỹ thuật của công trình bắt đầu có dấu hiệu biến dạng vật lý.", "Kể từ khi đơn vị thực hiện quyết toán vốn đầu tư dự án hoàn thành với cấp trên."], "answer": "Kể từ ngày nghiệm thu bàn giao đưa công trình vào sử dụng."}, {"question": "Việc vệ sinh mái nhà, khơi thông rãnh thoát nước thuộc cấp bảo trì nào?", "options": ["Bảo trì cấp 1.", "Bảo trì cấp 2.", "Bảo trì cấp 3.", "Bảo trì cấp 4."], "answer": "Bảo trì cấp 1."}, {"question": "Ai có trách nhiệm lập kế hoạch bảo trì hàng năm tại tiểu đoàn?", "options": ["Trợ lý hậu cần tiểu đoàn.", "Chỉ huy đơn vị cùng đội ngũ thợ xây dựng.", "Cơ quan Doanh trại trung đoàn dựa trên số liệu báo cáo của đơn vị.", "Hội đồng kiểm kê tài sản cố định của đơn vị cấp tiểu đoàn."], "answer": "Trợ lý hậu cần tiểu đoàn."}, {"question": "Nội dung chính của kiểm tra công trình định kỳ là gì?", "options": ["Quan sát bằng mắt hoặc thiết bị để phát hiện hư hỏng, khiếm khuyết.", "Đánh giá lại sơ đồ kết cấu và khả năng chịu tải của nền móng công trình.", "Kiểm tra sự phù hợp của công trình với quy hoạch kiến trúc tổng thể.", "Thực hiện các thí nghiệm nén tĩnh và siêu âm cốt thép trong bê tông."], "answer": "Quan sát bằng mắt hoặc thiết bị để phát hiện hư hỏng, khiếm khuyết."}, {"question": "Công tác \"Sửa chữa nhỏ\" thường bao gồm những việc gì?", "options": ["Thay thế các linh kiện điện nước hư hỏng, dặm vá sơn, vôi ve.", "Thay đổi vật liệu bao che và gia cố hệ thống dầm sàn của nhà ở.", "Xử lý triệt để các vết nứt kết cấu do lún lệch nền móng gây ra.", "Thay thế toàn bộ hệ thống cửa đi, cửa sổ bằng vật liệu cao cấp hơn."], "answer": "Thay thế các linh kiện điện nước hư hỏng, dặm vá sơn, vôi ve."}, {"question": "Hồ sơ bảo trì công trình tiểu đoàn bộ binh cần được lưu giữ tại đâu?", "options": ["Tại tiểu đoàn và cơ quan doanh trại trung đoàn.", "Tại cơ quan tài chính để làm căn cứ trích khấu hao tài sản cố định.", "Trong hệ thống lưu trữ số của Cục Doanh trại và Tổng cục Hậu cần - Kỹ thuật.", "Do nhà thầu thi công lưu giữ để phục vụ công tác bảo hành công trình."], "answer": "Tại tiểu đoàn và cơ quan doanh trại trung đoàn."}, {"question": "Việc quan trắc công trình thường được áp dụng cho loại công trình nào?", "options": ["Công trình có dấu hiệu lún, nứt, nghiêng hoặc có yêu cầu đặc biệt.", "Các công trình tạm, công trình dã ngoại phục vụ huấn luyện ngắn ngày.", "Hệ thống tường rào, cổng trạm và các hạng mục trang trí ngoại thất.", "Toàn bộ các dãy nhà ở cấp 4 được xây dựng trên nền đất yếu."], "answer": "Công trình có dấu hiệu lún, nứt, nghiêng hoặc có yêu cầu đặc biệt."}, {"question": "Bảo đảm doanh trại dã ngoại thường được tiến hành trong trường hợp nào?", "options": ["Khi đơn vị thực hiện hành quân, trú quân, huấn luyện hoặc chiến đấu ngoài doanh trại.", "Khi đơn vị thực hiện các dự án kinh tế kết hợp quốc phòng tại các địa bàn vùng sâu.", "Khi doanh trại thường trực chuyển đổi công năng phục vụ các sự kiện chính trị các cấp.", "Khi thực hiện quy trình dồn dịch quân số để giải phóng mặt bằng sửa chữa lớn."], "answer": "Khi đơn vị thực hiện hành quân, trú quân, huấn luyện hoặc chiến đấu ngoài doanh trại."}, {"question": "Đặc điểm nổi bật nhất của doanh trại dã ngoại là gì?", "options": ["Tính chất tạm thời, cơ động, dễ tháo lắp và tận dụng vật liệu tại chỗ.", "Tính đồng bộ về quy cách trang bị và khả năng chống chịu với mọi loại vũ khí.", "Được thiết kế theo mô-đun lắp ghép sẵn với hệ thống hạ tầng kỹ thuật khép kín.", "Ưu tiên tính thẩm mỹ và sự hài hòa với không gian đô thị nơi đơn vị hành quân qua."], "answer": "Tính chất tạm thời, cơ động, dễ tháo lắp và tận dụng vật liệu tại chỗ."}, {"question": "Vật chất bảo đảm dã ngoại chủ yếu mang theo bao gồm những gì?", "options": ["Nhà bạt, dụng cụ chứa nước, đèn thắp sáng dã ngoại, cuốc xẻng.", "Hệ thống điện năng lượng mặt trời di động và thiết bị lọc nước công nghiệp.", "Giường, bạt, bàn ghế xếp bằng hợp kim nhẹ và hệ thống thông gió dã chiến.", "Các loại vật liệu bao che chuyên dụng có khả năng chống tia hồng ngoại và ra-đa."], "answer": "Nhà bạt, dụng cụ chứa nước, đèn thắp sáng dã ngoại, cuốc xẻng."}, {"question": "Khi trú quân trong nhà dân, bộ đội phải tuân thủ nguyên tắc nào?", "options": ["\"Đi dân nhớ, ở dân thương\", chấp hành tốt công tác dân vận và kỷ luật.", "Thực hiện hạch toán chi phí sử dụng điện nước và hạ tầng theo giá thị trường.", "Phối hợp với địa phương để lập biên bản kiểm kê tài sản gia đình trước khi vào ở.", "Đảm bảo tính biệt lập hoàn toàn giữa khu vực ngủ nghỉ và không gian sinh hoạt của chủ nhà."], "answer": "\"Đi dân nhớ, ở dân thương\", chấp hành tốt công tác dân vận và kỷ luật."}, {"question": "Việc lựa chọn khu vực trú quân dã ngoại cần ưu tiên yếu tố nào?", "options": ["Có địa hình thuận lợi cho phòng thủ, ẩn quân và gần nguồn nước sạch.", "Nằm tại các khu vực bằng phẳng, gần trục đường chính để thuận tiện cho cơ giới hóa.", "Phải là các khu vực có nền đất cứng, cao ráo để hạn chế việc đào đắp hầm hào.", "Khu vực có mật độ dân cư thưa thớt để đảm bảo tuyệt đối bí mật cho các hoạt động quân sự."], "answer": "Có địa hình thuận lợi cho phòng thủ, ẩn quân và gần nguồn nước sạch."}, {"question": "Nhà bạt dã ngoại thường được sử dụng cho mục đích gì?", "options": ["Làm nơi ở, sinh hoạt, đặt sở chỉ huy hoặc trạm quân y tạm thời.", "Làm cơ sở bảo dưỡng kỹ thuật và che chắn cho các loại phương tiện đặc chủng.", "Làm không gian huấn luyện lý thuyết cho bộ đội khi thời tiết khắc nghiệt.", "Thiết lập các trung tâm thông tin và điều hành hậu cần cấp chiến thuật."], "answer": "Làm nơi ở, sinh hoạt, đặt sở chỉ huy hoặc trạm quân y tạm thời."}, {"question": "Để đảm bảo ánh sáng ban đêm trong dã ngoại, thiết bị thường dùng hiện nay là gì?", "options": ["Đèn pin, đèn bão hoặc hệ thống đèn LED dùng pin/ắc quy.", "Hệ thống máy phát điện dã chiến công suất nhỏ kết hợp lưới điện địa phương.", "Các loại đèn pha chuyên dụng có kính lọc sắc để chống sự phát hiện của địch.", "Thiết bị chiếu sáng thông minh tích hợp cảm biến chuyển động quanh khu vực lán trại."], "answer": "Đèn pin, đèn bão hoặc hệ thống đèn LED dùng pin/ắc quy."}, {"question": "Việc xử lý rác thải trong trú quân dã ngoại được thực hiện như thế nào?", "options": ["Phân loại, thu gom vào hố rác và lấp kín, hoàn trả mặt bằng khi rời đi.", "Vận chuyển toàn bộ rác thải về khu vực xử lý tập trung của trung đoàn định kỳ.", "Thực hiện quy trình tiêu hủy bằng hóa chất chuyên dụng để đảm bảo bí mật dấu quân.", "Bàn giao cho chính quyền địa phương quản lý và xử lý sau khi đơn vị rút quân."], "answer": "Phân loại, thu gom vào hố rác và lấp kín, hoàn trả mặt bằng khi rời đi."}, {"question": "Dụng cụ chứa nước dã ngoại của cá nhân chiến sĩ thường là gì?", "options": ["Bình tông (tông đựng nước) đeo theo người.", "Các loại túi chứa nước mềm có dung tích từ 10 đến 20 lít đặt trong ba lô.", "Hệ thống bình lọc nước cá nhân tích hợp trong bộ trang bị hành quân.", "Can nhựa 5 lít, 20 lít."], "answer": "Bình tông (tông đựng nước) đeo theo người."}, {"question": "Trang thiết bị điện trong doanh trại tiểu đoàn bộ binh chủ yếu được dùng với mục đích gì?", "options": ["Chiếu sáng sinh hoạt, làm việc, chiếu sáng bảo vệ và phục vụ các máy móc nhỏ.", "Cung cấp nguồn điện động lực cho các trạm sửa chữa vũ khí, trang bị kỹ thuật tập trung.", "Thay thế hoàn toàn các nguồn nhiên liệu hóa thạch trong đun nấu dã chiến.", "Duy trì nguồn điện dự phòng liên tục cho hệ thống thông tin liên lạc và báo động tác chiến."], "answer": "Chiếu sáng sinh hoạt, làm việc, chiếu sáng bảo vệ và phục vụ các máy móc nhỏ."}, {"question": "Thiết bị nào sau đây dùng để bảo vệ mạch điện khi xảy ra quá tải hoặc ngắn mạch?", "options": ["Cầu chì hoặc Aptomat (CB).", "Hệ thống biến áp cách ly công suất thấp.", "Thiết bị điều chỉnh điện áp tự động (Lioa).", "Rơ-le."], "answer": "Cầu chì hoặc Aptomat (CB)."}, {"question": "Tại sao không được dùng dây đồng hoặc dây sắt thay thế cho dây chì trong cầu chì?", "options": ["Vì chúng có nhiệt độ nóng chảy cao, không kịp đứt khi có sự cố gây cháy nổ.", "Do độ dẫn điện của đồng quá lớn làm mất tác dụng cản trở dòng đoản mạch.", "Vì các kim loại này dễ bị oxi hóa bởi độ ẩm, làm tăng điện trở tiếp xúc.", "Nhằm đảm bảo tính đồng bộ về vật liệu theo tiêu chuẩn thiết kế của nhà sản xuất."], "answer": "Vì chúng có nhiệt độ nóng chảy cao, không kịp đứt khi có sự cố gây cháy nổ."}, {"question": "Loại bóng đèn nào hiện nay được khuyến khích sử dụng để tiết kiệm điện?", "options": ["Bóng đèn LED.", "Bóng đèn halogen công suất cao.", "Bóng đèn huỳnh quang thế hệ mới T5/T8.", "Bóng đèn sợi đốt."], "answer": "Bóng đèn LED."}, {"question": "Thiết bị nào dùng để đo lượng nước tiêu thụ của đơn vị?", "options": ["Đồng hồ đo nước.", "Van tiết lưu điều chỉnh lưu lượng.", "Cảm biến áp suất dòng chảy trên đường ống chính.", "Hệ thống phao báo mức nước điện tử."], "answer": "Đồng hồ đo nước."}, {"question": "Khi tay đang ướt, tuyệt đối không được làm gì để đảm bảo an toàn điện?", "options": ["Chạm tay vào các công tắc, ổ cắm hoặc thiết bị điện đang hoạt động.", "Thực hiện thao tác kiểm tra vỏ cách điện của các thiết bị.", "Tiếp cận các khu vực có bảng điện điều khiển tập trung của đơn vị.", "Điều chỉnh các thông số vận hành trên màn hình cảm biến của thiết bị."], "answer": "Chạm tay vào các công tắc, ổ cắm hoặc thiết bị điện đang hoạt động."}, {"question": "Việc lắp đặt hệ thống dây dẫn điện trong nhà ở bộ đội thường là gì?", "options": ["Đi trong ống bảo vệ hoặc đi ngầm để đảm bảo an toàn và thẩm mỹ.", "Đi nổi trên bề mặt tường, trần nhà để dễ dàng thay đổi khi phụ tải thay đổi.", "Sử dụng dây cáp bọc giáp thép đi trực tiếp bên dưới nền nhà.", "Thiết kế theo sơ đồ hình rẻ quạt để giảm thiểu chiều dài dây dẫn."], "answer": "Đi trong ống bảo vệ hoặc đi ngầm để đảm bảo an toàn và thẩm mỹ."}, {"question": "Van phao cơ trong bể nước có tác dụng gì?", "options": ["Tự động ngắt nước khi bể đầy, tránh lãng phí và ngập nước.", "Điều tiết áp suất bên trong bồn chứa khi nhiệt độ môi trường thay đổi.", "Tăng tốc độ dòng chảy khi mực nước trong bể xuống dưới mức tối thiểu.", "Lọc bỏ các tạp chất lơ lửng trước khi nước đi vào hệ thống phân phối."], "answer": "Tự động ngắt nước khi bể đầy, tránh lãng phí và ngập nước."}, {"question": "Một trong những biện pháp tiết kiệm nước hiệu quả nhất là gì?", "options": ["Khóa chặt vòi nước sau khi sử dụng và nhanh chóng sửa chữa ngay các điểm rò rỉ.", "Tái sử dụng nước thải sinh hoạt cho mục đích vệ sinh công nghiệp của đơn vị.", "Lắp đặt các thiết bị hạn chế lưu lượng tại tất cả các đầu vòi cấp nước.", "Sử dụng hệ thống tưới cây tự động bằng nguồn nước ngầm chưa qua xử lý."], "answer": "Khóa chặt vòi nước sau khi sử dụng và nhanh chóng sửa chữa ngay các điểm rò rỉ."}, {"question": "Tại cấp tiểu đoàn, nội dung xây dựng cơ bản chủ yếu tập trung vào việc gì?", "options": ["Cải tạo, nâng cấp, sửa chữa công trình đang sử dụng.", "Quy hoạch các khu chức năng và triển khai các dự án nhà ở công vụ.", "Lập hồ sơ thiết kế kỹ thuật thi công cho các công trình cấp III, cấp IV.", "Giám sát các gói thầu cung cấp thiết bị nội thất cho sở chỉ huy."], "answer": "Cải tạo, nâng cấp, sửa chữa công trình đang sử dụng."}, {"question": "Theo Điều lệ, \"Tài sản doanh trại\" được hiểu như thế nào?", "options": ["Là tài sản công do Nhà nước giao cho đơn vị quân đội quản lý và sử dụng.", "Là các vật chất tiêu hao phục vụ trực tiếp cho hoạt động hành chính của cơ quan, đơn vị.", "Là toàn bộ trang thiết bị máy móc phục vụ thi công công trình của đơn vị.", "Là quỹ nhà ở và đất đai thuộc quyền sở hữu của quân đội."], "answer": "Là tài sản công do Nhà nước giao cho đơn vị quân đội quản lý và sử dụng."}, {"question": "Tại sao nói công tác doanh trại là một nội dung quan trọng của công tác lãnh đạo, chỉ huy?", "options": ["Vì nó liên quan đến nhiều văn bản pháp quy, tiêu chuẩn kỹ thuật và kinh phí lớn.", "Vì đây là yếu tố tiên quyết để đánh giá năng lực quản lý tài chính của cơ quan, đơn vị.", "Vì kết quả công tác doanh trại phản ánh trực tiếp chất lượng huấn luyện của đơn vị.", "Vì đây là công tác có tính chất biệt lập, đòi hỏi sự chỉ đạo trực tiếp từ cơ quan nghiệp vụ cấp trên."], "answer": "Vì nó liên quan đến nhiều văn bản pháp quy, tiêu chuẩn kỹ thuật và kinh phí lớn."}, {"question": "Cơ chế lãnh đạo, chỉ huy đối với công tác doanh trại ở trung đoàn bộ binh là gì?", "options": ["Dưới sự lãnh đạo của cấp ủy, chỉ huy đơn vị và hướng dẫn của ngành cấp trên.", "Dưới sự điều hành trực tiếp của Chủ nhiệm Hậu cần theo quy định.", "Theo cơ chế hạch toán độc lập dựa trên dự toán ngân sách đã được phê duyệt.", "Dưới sự giám sát của Hội đồng quân nhân và các ban ngành chức năng địa phương."], "answer": "Dưới sự lãnh đạo của cấp ủy, chỉ huy đơn vị và hướng dẫn của ngành cấp trên."}, {"question": "Yếu tố nào sau đây ảnh hưởng trực tiếp đến tuổi thọ của tài sản doanh trại?", "options": ["Điều kiện địa hình, thời tiết và khí hậu tại nơi đóng quân.", "Sự biến động của thị trường vật liệu xây dựng và đơn giá nhân công.", "Quy trình thanh quyết toán kinh phí bảo trì của cơ quan tài chính cấp trên.", "Số lượng các cuộc diễn tập vòng tổng hợp định kỳ của đơn vị hằng năm."], "answer": "Điều kiện địa hình, thời tiết và khí hậu tại nơi đóng quân."}, {"question": "Nội dung nào sau đây không thuộc nhiệm vụ của ngành doanh trại cấp chiến thuật?", "options": ["Nghiên cứu, tham mưu đề xuất các chính sách nhà ở cấp Chính phủ.", "Lập kế hoạch bảo trì, sửa chữa các công trình hiện có trong đơn vị.", "Quản lý, sử dụng diện tích đất quốc phòng được giao theo đúng ranh giới.", "Tổ chức tiếp nhận và cấp phát vật chất doanh trại cho các đối tượng theo tiêu chuẩn."], "answer": "Nghiên cứu, tham mưu đề xuất các chính sách nhà ở cấp Chính phủ."}, {"question": "Trách nhiệm của mọi quân nhân đối với tài sản doanh trại là gì?", "options": ["Trực tiếp tham gia quản lý, sử dụng, bảo quản theo đúng tiêu chuẩn, tiện nghi.", "Thực hiện nhiệm vụ duy tu, sửa chữa các hỏng hóc kỹ thuật của hệ thống điện nước.", "Phối hợp với cơ quan chức năng để kiểm kê và thanh lý các tài sản hết niên hạn.", "Tham gia thiết kế và bố trí không gian làm việc theo quy định của đơn vị."], "answer": "Trực tiếp tham gia quản lý, sử dụng, bảo quản theo đúng tiêu chuẩn, tiện nghi."}, {"question": "Việc \"Kết hợp chặt chẽ các nguồn bảo đảm\" trong công tác doanh trại bao gồm những nguồn nào?", "options": ["Nguồn cấp trên, nguồn khai thác tại địa phương và nguồn đơn vị tự tạo.", "Nguồn ngân sách tập trung, nguồn quỹ phúc lợi và vốn đầu tư của doanh nghiệp.", "Nguồn kinh phí thường xuyên, nguồn vốn xây dựng cơ bản và vốn vay ưu đãi.", "Nguồn viện trợ từ cấp chiến dịch và nguồn thu từ hoạt động tăng gia sản xuất."], "answer": "Nguồn cấp trên, nguồn khai thác tại địa phương và nguồn đơn vị tự tạo."}, {"question": "Tại sao cần phải thực hiện \"Bảo đảm đi đôi với quản lý sử dụng\"?", "options": ["Để nâng cao chất lượng, hiệu quả công tác doanh trại và chống lãng phí.", "Để đơn giản hóa các thủ tục hành chính trong việc tiếp nhận vật chất.", "Để đáp ứng yêu cầu của công tác kiểm toán và thanh tra tài chính quân đội.", "Để giảm bớt áp lực cho đội ngũ nhân viên chuyên môn cấp trung đoàn."], "answer": "Để nâng cao chất lượng, hiệu quả công tác doanh trại và chống lãng phí."}, {"question": "Đặc điểm của tài sản doanh trại \"Tính chất tài sản dùng chung\" ở tiểu đoàn bộ binh dẫn đến yêu cầu gì trong quản lý?", "options": ["Đòi hỏi sự tham gia và nâng cao trách nhiệm của mọi cán bộ, chiến sĩ.", "Phải thực hiện chế độ khoán kinh phí sửa chữa cho từng đầu mối đại đội.", "Cần tăng cường nhân lực chuyên trách bảo vệ tài sản tại các vị trí công cộng.", "Phải thiết lập hệ thống định mức tiêu hao riêng biệt cho từng loại tài sản."], "answer": "Đòi hỏi sự tham gia và nâng cao trách nhiệm của mọi cán bộ, chiến sĩ."}, {"question": "Chức năng của Phòng Doanh trại cấp quân khu là gì?", "options": ["Tham mưu, đề xuất và chỉ đạo thực hiện các mặt công tác doanh trại theo phân cấp.", "Phê duyệt báo cáo kinh tế kỹ thuật của các dự án xây dựng thuộc Bộ Quốc phòng.", "Trực tiếp quản lý và điều hành các đơn vị công binh tham gia xây dựng doanh trại.", "Thẩm định năng lực của các nhà thầu thi công công trình quốc phòng trên địa bàn."], "answer": "Tham mưu, đề xuất và chỉ đạo thực hiện các mặt công tác doanh trại theo phân cấp."}, {"question": "Bộ phận Doanh trại trung đoàn có nhiệm vụ gì trong quản lý đất quốc phòng?", "options": ["Tổ chức thực hiện tốt việc quản lý, sử dụng và kiểm kê, báo cáo theo quy định.", "Đề xuất phương án cấp giấy chứng nhận quyền sử dụng đất cho các đơn vị trực thuộc.", "Phối hợp với địa phương để quy hoạch lại ranh giới các khu vực tăng gia tập trung.", "Xây dựng kế hoạch giải phóng mặt bằng cho các công trình hạ tầng kỹ thuật mới."], "answer": "Tổ chức thực hiện tốt việc quản lý, sử dụng và kiểm kê, báo cáo theo quy định."}, {"question": "Quy trình tiếp nhận vật chất doanh trại tại tiểu đoàn diễn ra như thế nào?", "options": ["Kiểm tra số lượng, chất lượng, quy cách theo phiếu xuất kho và ký biên bản.", "Đối chiếu danh mục vật chất thực nhận với kế hoạch bảo đảm của cấp trên.", "Thẩm định nguồn gốc xuất xứ và các chứng chỉ chất lượng kỹ thuật của nhà sản xuất.", "Thực hiện thủ tục nhập kho và phân loại theo nhóm niên hạn sử dụng quy định."], "answer": "Kiểm tra số lượng, chất lượng, quy cách theo phiếu xuất kho và ký biên bản."}, {"question": "\"Định mức sử dụng điện\" trong quân đội được quy định nhằm mục đích gì?", "options": ["Quản lý việc tiêu thụ điện năng hợp lý, tránh lãng phí ngân sách quốc phòng.", "Giới hạn thời gian vận hành các thiết bị có công suất lớn trong giờ cao điểm.", "Đảm bảo sự cân bằng phụ tải cho trạm biến áp của đơn vị đóng quân.", "Làm cơ sở để điều chỉnh dự toán kinh phí cho các hoạt động huấn luyện."], "answer": "Quản lý việc tiêu thụ điện năng hợp lý, tránh lãng phí ngân sách quốc phòng."}, {"question": "Việc \"Dồn dịch doanh cụ\" được thực hiện trong trường hợp nào?", "options": ["Khi số lượng doanh cụ không đủ hoặc hỏng hóc cần tập trung để sửa chữa, tận dụng.", "Khi đơn vị triển khai các kế hoạch diễn tập và cần giải phóng không gian nhà ở.", "Thực hiện khi có sự thay đổi về quy mô biên chế tổ chức của các phân đội.", "Nhằm đồng bộ hóa quy cách, chủng loại trang thiết bị theo yêu cầu chính quy."], "answer": "Khi số lượng doanh cụ không đủ hoặc hỏng hóc cần tập trung để sửa chữa, tận dụng."}, {"question": "Tài sản doanh trại được coi là \"loại khỏi biên chế\" khi nào?", "options": ["Khi tài sản đã hết hạn sử dụng, hư hỏng không thể sửa chữa và có quyết định của cấp trên.", "Khi tài sản không còn phù hợp với tiêu chuẩn trang bị hiện đại của quân đội.", "Khi thực hiện quy trình bàn giao tài sản cho địa phương chuyển đổi mục đích sử dụng.", "Ngay khi tài sản phát sinh các hỏng hóc lớn ảnh hưởng đến công năng sử dụng."], "answer": "Khi tài sản đã hết hạn sử dụng, hư hỏng không thể sửa chữa và có quyết định của cấp trên."}, {"question": "Trách nhiệm Trợ lý hậu cần tiểu đoàn trong quản lý nhà ở công trình là gì?", "options": ["Thường xuyên kiểm tra, nắm chắc hiện trạng và tham mưu kế hoạch bảo trì.", "Trực tiếp phê duyệt các phương án sửa chữa cấp bách dưới hạn mức ngân sách.", "Giám sát các hoạt động thi công của nhà thầu trên diện tích đất được giao.", "Quản lý hệ thống hồ sơ kỹ thuật và bản vẽ hoàn công của toàn bộ doanh trại."], "answer": "Thường xuyên kiểm tra, nắm chắc hiện trạng và tham mưu kế hoạch bảo trì."}, {"question": "Tại sao cần phải thực hiện kiểm kê tài sản doanh trại định kỳ?", "options": ["Để nắm chắc số lượng, chất lượng thực tế so với sổ sách, kịp thời phát hiện mất mát, hư hỏng.", "Để đánh giá trình độ bảo quản và ý thức trách nhiệm của cán bộ hậu cần.", "Nhằm làm căn cứ điều chỉnh kế hoạch mua sắm vật chất cho năm ngân sách tới.", "Để hoàn thiện hồ sơ báo cáo thực trạng trang bị theo yêu cầu của cấp trên."], "answer": "Để nắm chắc số lượng, chất lượng thực tế so với sổ sách, kịp thời phát hiện mất mát, hư hỏng."}, {"question": "Nội dung \"Quản lý đất quốc phòng\" ở cấp tiểu đoàn bao gồm công việc gì?", "options": ["Quản lý ranh giới, mốc giới, không độ xảy ra lấn chiếm và sử dụng đúng mục đích.", "Đề xuất phương án cấp giấy chứng nhận quyền sử dụng đất cho các đơn vị trực thuộc.", "Quy hoạch vùng bảo vệ công trình quốc phòng và khu vực cấm xây dựng.", "Phối hợp với địa phương để giải quyết các tranh chấp về quyền sở hữu đất đai."], "answer": "Quản lý ranh giới, mốc giới, không độ xảy ra lấn chiếm và sử dụng đúng mục đích."}, {"question": "Việc cấp phát vật chất doanh trại cho chiến sĩ mới nhập ngũ phải đảm bảo yêu cầu gì?", "options": ["Đúng đối tượng, đủ số lượng, chất lượng tốt và có sự ký nhận rõ ràng.", "Phải được thực hiện tập trung theo kế hoạch tiếp nhận quân của trung đoàn.", "Tuân thủ tuyệt đối các quy định về niên hạn và thu hồi vật chất cũ tương ứng.", "Có sự giám sát của ban chỉ huy tiểu đoàn và các tổ chức quần chúng."], "answer": "Đúng đối tượng, đủ số lượng, chất lượng tốt và có sự ký nhận rõ ràng."}, {"question": "Khi xảy ra mất mát tài sản doanh trại, phải xử lý như thế nào?", "options": ["Lập biên bản, xác định nguyên nhân trách nhiệm và báo cáo cấp trên xử lý.", "Yêu cầu đơn vị làm mất nhanh chóng mua bổ sung.", "Đề xuất quy trình thanh lý khẩn cấp để xóa sổ tài sản trên hệ thống quản lý.", "Thực hiện xử lý kỷ luật đối với tổ chức, cá nhân làm mất tài sản doanh trại."], "answer": "Lập biên bản, xác định nguyên nhân trách nhiệm và báo cáo cấp trên xử lý."}, {"question": "Hoạt động \"Bảo vệ môi trường doanh trại\" bao gồm những việc làm nào?", "options": ["Thu gom rác thải, xử lý nước thải sinh hoạt và trồng, chăm sóc cây xanh.", "Xây dựng hệ thống quan trắc và đánh giá tác động môi trường quân sự định kỳ.", "Triển khai các dự án tái chế rác thải công nghiệp phục vụ hoạt động đơn vị.", "Phối hợp với quân y cấp trên để khử khuẩn và xử lý chất thải nguy hại."], "answer": "Thu gom rác thải, xử lý nước thải sinh hoạt và trồng, chăm sóc cây xanh."}, {"question": "Tại sao nói quản lý tài sản doanh trại tại tiểu đoàn có \"vị trí đặc biệt quan trọng\"?", "options": ["Vì nó gắn liền với đời sống bộ đội và nhiệm vụ huấn luyện, sẵn sàng chiến đấu.", "Vì đây là nội dung trọng tâm trong kiểm tra toàn diện công tác hậu cần hằng năm.", "Vì quản lý tốt sẽ giảm thiểu tối đa các sự cố kỹ thuật gây thiệt hại về người.", "Vì tài sản doanh trại chiếm tỷ trọng lớn nhất trong tài sản công ở đơn vị."], "answer": "Vì nó gắn liền với đời sống bộ đội và nhiệm vụ huấn luyện, sẵn sàng chiến đấu."}, {"question": "Tại sao phải thực hiện bảo trì công trình theo đúng quy trình kỹ thuật?", "options": ["Để duy trì tuổi thọ thiết kế và đảm bảo an toàn trong quá trình sử dụng.", "Để đảm bảo tính đồng bộ về mặt thẩm mỹ kiến trúc trong toàn quân.", "Nhằm tối ưu hóa định mức tiêu hao vật tư theo dự toán được duyệt.", "Để làm cơ sở pháp lý cho việc giải ngân kinh phí thường xuyên hằng năm."], "answer": "Để duy trì tuổi thọ thiết kế và đảm bảo an toàn trong quá trình sử dụng."}, {"question": "Căn cứ để lập kế hoạch bảo trì công trình hàng năm là gì?", "options": ["Quy trình bảo trì của nhà thầu và hiện trạng thực tế của công trình.", "Chỉ tiêu ngân sách quốc phòng phân bổ cho ngành hậu cần của đơn vị.", "Nghị quyết của cấp ủy đơn vị về việc xây dựng cảnh quan môi trường.", "Các tiêu chuẩn, định mức kỹ thuật do Bộ Xây dựng ban hành mới nhất."], "answer": "Quy trình bảo trì của nhà thầu và hiện trạng thực tế của công trình."}, {"question": "Quy trình bảo trì công trình bao gồm những bước chính nào?", "options": ["Kiểm tra, đánh giá hiện trạng, lập kế hoạch, thực hiện và nghiệm thu.", "Khảo sát sơ bộ, lập dự toán kinh phí, mua sắm vật tư và thi công.", "Lập hồ sơ kỹ thuật, xin phê duyệt danh mục, tổ chức thầu và bàn giao.", "Thống kê hư hỏng, huy động lực lượng, sửa chữa và quyết toán sổ sách."], "answer": "Kiểm tra, đánh giá hiện trạng, lập kế hoạch, thực hiện và nghiệm thu."}, {"question": "Việc sửa chữa công trình doanh trại phải đảm bảo yêu cầu gì về kiến trúc?", "options": ["Giữ nguyên hình dáng, màu sắc và sự thống nhất theo quy định chính quy.", "Cập nhật các xu hướng thiết kế mới để hiện đại hóa hạ tầng đơn vị.", "Ưu tiên sử dụng các loại vật liệu có độ bền cao, không phụ thuộc màu sắc cũ.", "Phải có sự điều chỉnh để phù hợp với quy hoạch đô thị của địa phương sở tại."], "answer": "Giữ nguyên hình dáng, màu sắc và sự thống nhất theo quy định chính quy."}, {"question": "Trách nhiệm của đơn vị thi công sửa chữa công trình doanh trại trong quân đội là gì?", "options": ["Đảm bảo chất lượng, tiến độ và an toàn lao động tuyệt đối.", "Chủ trì tổ chức nghiệm thu, đánh giá phân cấp chất lượng công trình sau khi hoàn thành.", "Chịu trách nhiệm lập hồ sơ thiết kế, dự toán và phê duyệt phương án thi công.", "Phải phối hợp với đơn vị sử dụng để đào tạo kỹ thuật bảo trì cơ bản."], "answer": "Đảm bảo chất lượng, tiến độ và an toàn lao động tuyệt đối."}, {"question": "Khi phát hiện công trình có nguy cơ sụp đổ, người quản lý phải làm gì ngay lập tức?", "options": ["Di chuyển người, tài sản ra ngoài và báo cáo cấp trên để xử lý khẩn cấp.", "Thiết lập vùng cảnh báo nguy hiểm và tổ chức lực lượng gia cố tạm thời.", "Thuê đơn vị tư vấn kiểm định đánh giá mức độ an toàn chịu lực của công trình.", "Ngắt toàn bộ hệ thống điện và chờ lệnh điều động của cơ quan cấp trên."], "answer": "Di chuyển người, tài sản ra ngoài và báo cáo cấp trên để xử lý khẩn cấp."}, {"question": "Sự khác biệt giữa \"Bảo trì thường xuyên\" và \"Sửa chữa định kỳ\" là gì?", "options": ["Bảo trì thường xuyên làm hàng ngày; sửa chữa định kỳ làm theo chu kỳ năm.", "Bảo trì thường xuyên tập trung vào phần vỏ; sửa chữa định kỳ vào phần kết cấu.", "Bảo trì thường xuyên không dùng ngân sách; sửa chữa định kỳ dùng ngân sách.", "Sửa chữa định kỳ chỉ dành cho nhà cấp 3 trở lên, bảo trì dành cho mọi loại nhà."], "answer": "Bảo trì thường xuyên làm hàng ngày; sửa chữa định kỳ làm theo chu kỳ năm."}, {"question": "Việc giám sát sửa chữa công trình tại tiểu đoàn chủ yếu nhằm mục đích gì?", "options": ["Kiểm soát chất lượng vật liệu và đúng quy trình kỹ thuật thi công.", "Đảm bảo việc thi công không làm ảnh hưởng đến kế hoạch huấn luyện của đơn vị.", "Theo dõi khối lượng thực tế để làm căn cứ thanh, quyết toán tài chính chính xác.", "Phòng ngừa các sai phạm về an ninh quân đội và bí mật công trình quốc phòng."], "answer": "Kiểm soát chất lượng vật liệu và đúng quy trình kỹ thuật thi công."}, {"question": "Kinh phí bảo trì công trình doanh trại được lấy từ nguồn nào?", "options": ["Ngân sách quốc phòng cấp hàng năm theo phân cấp và các nguồn hợp pháp khác.", "Quỹ phúc lợi đơn vị và các nguồn thu từ hoạt động lao động sản xuất.", "Nguồn vốn đầu tư phát triển và quỹ vốn của đơn vị.", "Tiền khấu hao tài sản cố định được trích lại cho đơn vị quản lý trực tiếp."], "answer": "Ngân sách quốc phòng cấp hàng năm theo phân cấp và các nguồn hợp pháp khác."}, {"question": "Tại sao công tác bảo trì lại coi trọng việc \"Chống thấm, chống dột\"?", "options": ["Vì nước mưa xâm nhập làm hỏng kết cấu bê tông, cốt thép và gây mục nát gỗ.", "Để đảm bảo môi trường sinh hoạt khô ráo, tránh phát sinh dịch bệnh cho bộ đội.", "Vì đây là nguyên nhân hàng đầu gây ra sự cố cháy nổ hệ thống điện âm tường.", "Nhằm duy trì vẻ thẩm mỹ của bề mặt sơn và tăng giá trị sử dụng của công trình."], "answer": "Vì nước mưa xâm nhập làm hỏng kết cấu bê tông, cốt thép và gây mục nát gỗ."}, {"question": "Nội dung \"Sửa chữa đột xuất\" được thực hiện khi nào?", "options": ["Sau các sự cố thiên tai, hỏa hoạn hoặc hư hỏng nặng bất ngờ xảy ra.", "Khi có yêu cầu thay đổi công năng sử dụng để phục vụ nhiệm vụ mới.", "Thực hiện khi đơn vị có sự thay đổi lớn về quy hoạch mặt bằng đóng quân.", "Khi công trình xuất hiện các hư hỏng nằm ngoài kế hoạch bảo trì hằng năm."], "answer": "Sau các sự cố thiên tai, hỏa hoạn hoặc hư hỏng nặng bất ngờ xảy ra."}, {"question": "Việc nghiệm thu sửa chữa công trình doanh trại phải căn cứ vào yếu tố nào?", "options": ["Khối lượng thi công thực tế và chất lượng đạt được theo dự toán được duyệt.", "Thời gian hoàn thành công trình so với kế hoạch đề ra.", "Biên bản tự kiểm tra chất lượng của đơn vị thi công và ý kiến người sử dụng.", "Sự tương xứng giữa chất lượng hoàn thiện và đơn giá thị trường tại thời điểm đó."], "answer": "Khối lượng thi công thực tế và chất lượng đạt được theo dự toán được duyệt."}, {"question": "Tại sao phải chú trọng công tác vệ sinh phòng dịch trong dã ngoại?", "options": ["Vì điều kiện sinh hoạt thiếu thốn, dễ nảy sinh vi khuẩn và lây lan bệnh tật.", "Để đáp ứng các tiêu chuẩn vệ sinh môi trường theo quy định của quân y.", "Nhằm duy trì nếp sống chính quy và ngăn chặn các nguy cơ nhiễm độc từ nguồn nước.", "Để đảm bảo tính bền vững của môi trường sinh thái tại khu vực đơn vị trú đóng."], "answer": "Vì điều kiện sinh hoạt thiếu thốn, dễ nảy sinh vi khuẩn và lây lan bệnh tật."}, {"question": "Quy định về khoảng cách giữa các lán trại/nhà bạt trong dã ngoại nhằm mục đích gì?", "options": ["Đảm bảo an toàn phòng hỏa và hạn chế thiệt hại khi bị địch tấn công.", "Tạo không gian thông thoáng để giảm thiểu sự lây lan của các dịch bệnh đường hô hấp.", "Phù hợp với phương án bố trí đội hình chiến đấu và khả năng cơ động của đơn vị.", "Đảm bảo diện tích tối thiểu cho các hoạt động sinh hoạt và học tập tập trung."], "answer": "Đảm bảo an toàn phòng hỏa và hạn chế thiệt hại khi bị địch tấn công."}, {"question": "Cách tận dụng vật liệu tại chỗ để làm doanh trại dã ngoại là gì?", "options": ["Dùng tre, nứa, lá để dựng lán hoặc lót nền ngủ thay cho giường sắt.", "Khai thác gỗ từ các khu rừng phòng hộ để làm hệ thống khung cột kiên cố.", "Tận dụng các phế liệu công nghiệp tại địa bàn đóng quân để gia cố lán trại."], "answer": "Dùng tre, nứa, lá để dựng lán hoặc lót nền ngủ thay cho giường sắt."}, {"question": "Việc xây dựng hố xí dã ngoại phải đảm bảo khoảng cách với nguồn nước như thế nào?", "options": ["Cách nguồn nước ít nhất 30 - 50 mét và ở cuối nguồn nước, cuối hướng gió.", "Phải nằm ở độ cao thấp hơn nguồn nước và có hệ thống rãnh ngăn cách triệt để.", "Tuân thủ định mức về diện tích tiêu chuẩn và khoảng cách theo quy định.", "Cách khu vực sinh hoạt trung tâm của đơn vị ít nhất 100 mét về cuối hướng gió."], "answer": "Cách nguồn nước ít nhất 30 - 50 mét và ở cuối nguồn nước, cuối hướng gió."}, {"question": "Khi hành quân bằng xe ô tô, vật chất doanh trại được sắp xếp như thế nào?", "options": ["Gọn gàng, dễ lấy, vật nặng phía dưới, vật nhẹ phía trên và chằng buộc chắc chắn.", "Phân loại theo thứ tự sử dụng: vật chất dùng tại trạm trú quân xếp ngoài cùng.", "Đóng gói trong các bao bì chống ẩm và phân chia đều trọng tải cho các xe.", "Sắp xếp theo nhóm chức năng và có danh mục đối chiếu để kiểm soát mất mát."], "answer": "Gọn gàng, dễ lấy, vật nặng phía dưới, vật nhẹ phía trên và chằng buộc chắc chắn."}, {"question": "Trách nhiệm của Trợ lý hậu cần tiểu đoàn trước khi đơn vị đi dã ngoại là gì?", "options": ["Kiểm tra số lượng, chất lượng vật chất dã ngoại và lập kế hoạch bảo đảm.", "Hiệp đồng với chính quyền địa phương về địa điểm và phương án trú quân.", "Phân bổ định mức vật chất dã ngoại cho các phân đội theo biên chế thực tế.", "Tổ chức tập huấn kỹ thuật tháo lắp nhà bạt và xử lý nước cho cán bộ đại đội."], "answer": "Kiểm tra số lượng, chất lượng vật chất dã ngoại và lập kế hoạch bảo đảm."}, {"question": "Việc quản lý nguồn nước trong dã ngoại bao gồm những nội dung nào?", "options": ["Tìm kiếm nguồn, xử lý nước bằng hóa chất và bảo vệ nguồn nước.", "Thiết lập hệ thống phân phối nước theo giờ để kiểm soát lãng phí.", "Kiểm định các chỉ số lý hóa của nước tại phòng thí nghiệm dã chiến.", "Xây dựng phương án dự phòng nguồn nước trong tình huống bị địch bao vây."], "answer": "Tìm kiếm nguồn, xử lý nước bằng hóa chất và bảo vệ nguồn nước."}, {"question": "Công tác ngụy trang doanh trại dã ngoại nhằm mục đích gì?", "options": ["Giấu kín các hoạt động của đơn vị, tránh sự phát hiện của địch từ trên không.", "Phá vỡ hình khối đặc trưng của nhà bạt để hòa nhập vào cấu trúc địa hình.", "Hạn chế sự bộc lộ các mục tiêu nhiệt và phản xạ ánh sáng ban đêm.", "Bảo vệ bộ đội trước các phương tiện trinh sát kỹ thuật hiện đại của đối phương."], "answer": "Giấu kín các hoạt động của đơn vị, tránh sự phát hiện của địch từ trên không."}, {"question": "Khi thu quân từ dã ngoại về doanh trại, đơn vị cần thực hiện việc gì?", "options": ["Kiểm kê lại vật chất, bảo dưỡng, phơi phóng nhà bạt và vệ sinh bãi trú quân.", "Thực hiện thủ tục thanh lý các vật chất dã ngoại đã hư hỏng trong quá trình tác chiến.", "Đánh giá rút kinh nghiệm về công tác bảo đảm doanh trại trong dã ngoại.", "Quyết toán các nguồn kinh phí địa phương và hoàn tất hồ sơ dân vận."], "answer": "Kiểm kê lại vật chất, bảo dưỡng, phơi phóng nhà bạt và vệ sinh bãi trú quân."}, {"question": "Việc tổ chức \"Nhà ăn dã ngoại\" cần đảm bảo yêu cầu gì?", "options": ["Sạch sẽ, thoáng mát, có biện pháp chống ruồi nhặng và xa khu vực vệ sinh.", "Đảm bảo tính cơ động nhanh, có thể tháo dỡ và di chuyển trong thời gian ngắn.", "Phải bố trí hệ thống thoát nước thải riêng biệt để tránh gây ô nhiễm bề mặt.", "Thiết kế không gian đủ rộng để tổ chức các hoạt động sinh hoạt văn hóa tập thể."], "answer": "Sạch sẽ, thoáng mát, có biện pháp chống ruồi nhặng và xa khu vực vệ sinh."}, {"question": "Cách phòng chống côn trùng, rắn rết trong dã ngoại hiệu quả thường dùng là gì?", "options": ["Phát quang bụi rậm, rắc vôi bột xung quanh lán và nằm màn tuyệt đối.", "Sử dụng các loại thuốc xịt côn trùng chuyên dụng cho bề mặt vải nhà bạt.", "Thiết kế hệ thống rãnh ngăn cách có chứa các hợp chất xua đuổi động vật.", "Tận dụng các loại cây thảo mộc địa phương có mùi đặc trưng để bao quanh lán."], "answer": "Phát quang bụi rậm, rắc vôi bột xung quanh lán và nằm màn tuyệt đối."}, {"question": "Tại sao phải nối đất (tiếp địa) cho vỏ các thiết bị điện như máy bơm?", "options": ["Để dẫn dòng điện rò rỉ xuống đất, tránh gây giật điện cho người sử dụng.", "Để triệt tiêu các dòng điện cảm ứng gây nhiễu cho các thiết bị thông tin.", "Nhằm bảo vệ mạch điều khiển điện tử trước hiện tượng sốc điện áp.", "Đảm bảo thiết bị vận hành đúng thông số kỹ thuật trong môi trường ẩm ướt."], "answer": "Để dẫn dòng điện rò rỉ xuống đất, tránh gây giật điện cho người sử dụng."}, {"question": "Khi phát hiện dây dẫn điện bị bong tróc lớp vỏ cách điện, cần phải làm gì?", "options": ["Ngắt nguồn điện và dùng băng keo cách điện quấn kín hoặc thay dây mới.", "Sử dụng các loại ống co nhiệt chuyên dụng để gia cố tại điểm bị hở.", "Thực hiện nối cầu sang một tuyến dây dự phòng khác để duy trì phụ tải.", "Tiếp tục cho sử dụng, chờ có kinh phí, vật tư mới thay thế."], "answer": "Ngắt nguồn điện và dùng băng keo cách điện quấn kín hoặc thay dây mới."}, {"question": "Hiện tượng \"Quá tải\" mạch điện thường xảy ra khi nào?", "options": ["Sử dụng quá nhiều thiết bị điện có công suất lớn cùng một lúc trên một đường dây.", "Khi điện áp nguồn đột ngột tăng cao vượt quá ngưỡng chịu đựng của thiết bị.", "Do sự mất cân bằng pha trong hệ thống điện ba pha của doanh trại.", "Khi tiết diện dây dẫn quá lớn so với cường độ dòng điện thực tế của phụ tải."], "answer": "Sử dụng quá nhiều thiết bị điện có công suất lớn cùng một lúc trên một đường dây."}, {"question": "Việc bảo trì định kỳ hệ thống máy bơm nước bao gồm những gì?", "options": ["Kiểm tra độ cách điện, tra dầu mỡ, vệ sinh rác ở đầu hút và kiểm tra van.", "Thay thế hệ thống rơ-le nhiệt và tụ khởi động sau mỗi chu kỳ vận hành.", "Đo đạc lại các thông số lưu lượng và áp suất cột áp để điều chỉnh động cơ.", "Sơn lại lớp vỏ bảo vệ và kiểm tra tính nguyên vẹn của bệ móng máy."], "answer": "Kiểm tra độ cách điện, tra dầu mỡ, vệ sinh rác ở đầu hút và kiểm tra van."}, {"question": "Tại sao cần phải lắp đặt công tơ điện riêng cho từng dãy nhà hoặc đầu mối?", "options": ["Để theo dõi, quản lý lượng điện tiêu thụ và phát hiện kịp thời thất thoát, lãng phí.", "Nhằm làm căn cứ để phân bổ định mức kinh phí điện cho các đơn vị.", "Để đánh giá hiệu quả sử dụng các thiết bị điện tại mỗi đầu mối.", "Nhằm xác định chính xác tổn thất điện năng trên đường dây truyền tải nội bộ."], "answer": "Để theo dõi, quản lý lượng điện tiêu thụ và phát hiện kịp thời thất thoát, lãng phí."}, {"question": "Quy định về an toàn khi sử dụng bếp điện trong doanh trại tiểu đoàn là gì?", "options": ["Chỉ sử dụng tại những nơi quy định và tuyệt đối không được đun nấu trong phòng ngủ.", "Phải được trang bị hệ thống ngắt điện tự động riêng biệt cho khu vực bếp.", "Chỉ được phép sử dụng các loại bếp có công suất dưới mức quy định của trung đoàn.", "Cần có sự giám sát trực tiếp của doanh trại trung đoàn khi đơn vị tổ chức liên hoan."], "answer": "Chỉ sử dụng tại những nơi quy định và tuyệt đối không được đun nấu trong phòng ngủ."}, {"question": "Khi lắp đặt vòi nước, tại sao cần dùng băng tan (cao su non) quấn vào ren?", "options": ["Để làm kín khít mối nối, ngăn ngừa rò rỉ nước tại các khớp nối.", "Để tăng cường độ cứng vững và chống hiện tượng tự tháo của mối ghép ren.", "Giúp việc tháo lắp và thay thế vòi nước sau này được dễ dàng, không bị kẹt.", "Để bảo vệ các ren kim loại không bị ăn mòn hóa học do nguồn nước."], "answer": "Để làm kín khít mối nối, ngăn ngừa rò rỉ nước tại các khớp nối."}, {"question": "Một trong những cách khắc phục sự cố điện chập chờn là gì?", "options": ["Kiểm tra lại các điểm tiếp nối xem có bị lỏng hoặc ôxy hóa không.", "Thay thế hệ thống cầu chì bằng Aptomat có dòng định mức lớn hơn.", "Đảo pha dòng điện tại tủ phân phối chính để cân bằng lại phụ tải.", "Lắp đặt thêm các bộ ổn áp tại đầu nguồn các thiết bị điện nhạy cảm."], "answer": "Kiểm tra lại các điểm tiếp nối xem có bị lỏng hoặc ôxy hóa không."}, {"question": "Việc vệ sinh bồn chứa nước (téc nước) định kỳ giúp ích gì?", "options": ["Loại bỏ cặn bẩn, rêu mốc và đảm bảo chất lượng nước sinh hoạt.", "Kịp thời phát hiện các vết nứt, rò rỉ trên thân bồn để sửa chữa.", "Kiểm tra tình trạng hoạt động của van phao và hệ thống lọc đầu vào.", "Đảm bảo vệ sinh môi trường xung quanh khu vực đặt hệ thống bể chứa."], "answer": "Loại bỏ cặn bẩn, rêu mốc và đảm bảo chất lượng nước sinh hoạt."}, {"question": "Tại sao không nên bật bình nóng lạnh liên tục 24/24 giờ?", "options": ["Gây lãng phí điện năng, giảm tuổi thọ thiết bị và nguy cơ rò điện cao.", "Làm giảm hiệu quả của lớp vật liệu cách nhiệt bên trong bình chứa.", "Do thanh đốt sẽ bị đóng cặn nhanh hơn dưới tác động nhiệt liên tục.", "Dễ gây ra hiện tượng quá áp trên đường ống cấp nước nóng của tòa nhà."], "answer": "Gây lãng phí điện năng, giảm tuổi thọ thiết bị và nguy cơ rò điện cao."}, {"question": "Trách nhiệm của quân nhân khi làm hỏng thiết bị điện nước do lỗi chủ quan là gì?", "options": ["Phải tự bỏ kinh phí hoặc công sức để sửa chữa, thay thế và bị xử lý kỷ luật.", "Chịu trách nhiệm bồi thường theo giá trị hao mòn thực tế của thiết bị tại thời điểm hỏng.", "Phải thực hiện kiểm điểm và chịu các hình thức phạt bổ sung theo quy định đơn vị.", "Chịu sự giám sát chặt chẽ của ngành doanh trại trong các lần sử dụng thiết bị."], "answer": "Phải tự bỏ kinh phí hoặc công sức để sửa chữa, thay thế và bị xử lý kỷ luật."}];
+    let currentQuiz = [];
+    let userAnswers = {};
+
+    // Hàm xáo trộn mảng (Fisher-Yates Shuffle)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Bắt đầu bài thi
+    function startQuiz() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'block';
+        window.scrollTo(0, 0);
+
+        // Chọn ngẫu nhiên 50 câu và xáo trộn đáp án
+        let shuffledQuestions = shuffleArray([...allQuestions]);
+        currentQuiz = shuffledQuestions.slice(0, 50).map(q => {
+            return {
+                question: q.question,
+                options: shuffleArray([...q.options]),
+                answer: q.answer
+            };
+        });
+
+        renderQuestions();
+    }
+
+    // Hiển thị câu hỏi
+    function renderQuestions() {
+        const container = document.getElementById('questions-container');
+        container.innerHTML = '';
+
+        currentQuiz.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = `question-card-${index}`;
+            
+            const title = document.createElement('div');
+            title.className = 'question-title';
+            title.innerText = `Câu ${index + 1}: ${q.question}`;
+            card.appendChild(title);
+
+            q.options.forEach((opt, optIndex) => {
+                const label = document.createElement('label');
+                label.className = 'option-label';
+                label.id = `label-${index}-${optIndex}`;
+
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = `question${index}`;
+                radio.value = opt;
+                radio.onchange = () => {
+                    userAnswers[index] = opt;
+                    // Highlight selected option visually
+                    document.querySelectorAll(`input[name="question${index}"]`).forEach(r => {
+                        r.parentElement.style.backgroundColor = '';
+                    });
+                    label.style.backgroundColor = '#e2e6ea';
+                };
+
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(opt));
+                card.appendChild(label);
+            });
+            
+            container.appendChild(card);
+        });
+    }
+
+    // Nộp bài và chấm điểm
+    function submitQuiz() {
+        if(!confirm("Bạn có chắc chắn muốn nộp bài?")) return;
+
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        window.scrollTo(0, 0);
+
+        let correctCount = 0;
+        const reviewContainer = document.getElementById('review-container');
+        reviewContainer.innerHTML = '<h2>Chi tiết bài làm</h2>';
+
+        currentQuiz.forEach((q, index) => {
+            const userAnswer = userAnswers[index];
+            const isCorrect = userAnswer === q.answer;
+            if (isCorrect) correctCount++;
+
+            // Tạo card review
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            const title = document.createElement('div');
+            title.className = 'question-title';
+            title.innerText = `Câu ${index + 1}: ${q.question}`;
+            card.appendChild(title);
+
+            q.options.forEach((opt) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option-label';
+                optionDiv.innerText = opt;
+                
+                if (opt === q.answer) {
+                    optionDiv.classList.add('correct-answer');
+                } else if (opt === userAnswer && !isCorrect) {
+                    optionDiv.classList.add('wrong-answer');
+                }
+                
+                // Add a radio button to show what user selected (disabled)
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.disabled = true;
+                if(opt === userAnswer) radio.checked = true;
+                
+                optionDiv.prepend(radio);
+                card.appendChild(optionDiv);
+            });
+
+            if (!isCorrect) {
+                const feedback = document.createElement('span');
+                feedback.className = 'correct-text';
+                feedback.innerText = `Đáp án đúng: ${q.answer}`;
+                card.appendChild(feedback);
+            }
+
+            reviewContainer.appendChild(card);
+        });
+
+        const wrongCount = 50 - correctCount;
+        const score = (correctCount / 50) * 10;
+
+        document.getElementById('correct-text').innerText = correctCount;
+        document.getElementById('wrong-text').innerText = wrongCount;
+        document.getElementById('score-text').innerText = score.toFixed(1);
+    }
+</script>
+</body>
+</html>
